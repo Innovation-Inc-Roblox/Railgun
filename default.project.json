@@ -1,0 +1,6 @@
+{
+    "name": "Railgun",
+    "tree": {
+        "$path": "src"
+    }
+}

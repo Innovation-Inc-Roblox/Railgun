@@ -1,0 +1,12 @@
+{
+    "name": "Innovation-Railgun",
+    "tree": {
+        "$className": "DataModel",
+        "StarterPack": {
+            "$className": "StarterPack",
+            "Railgun": {
+                "$path": "."
+            }
+        }
+    }
+}

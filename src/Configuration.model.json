@@ -1,0 +1,40 @@
+{
+    "ClassName": "Configuration",
+    "Children": [
+        {
+            "Name": "AllowTeamKill",
+            "ClassName": "BoolValue",
+            "Properties": {
+                "Value": true
+            }
+        },
+        {
+            "Name": "Damage",
+            "ClassName": "NumberValue",
+            "Properties": {
+                "Value": 100
+            }
+        },
+        {
+            "Name": "FireBackAtPlayerWhenThroughWall",
+            "ClassName": "BoolValue",
+            "Properties": {
+                "Value": true
+            }
+        },
+        {
+            "Name": "FullAutomatic",
+            "ClassName": "BoolValue",
+            "Properties": {
+                "Value": false
+            }
+        },
+        {
+            "Name": "ReloadTime",
+            "ClassName": "NumberValue",
+            "Properties": {
+                "Value": 1.5
+            }
+        }
+    ]
+}

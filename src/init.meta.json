@@ -1,0 +1,8 @@
+{
+    "className": "Tool",
+    "properties": {
+        "Grip": [0, -0.364, 0.977, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        "TextureId": "http://www.roblox.com/asset/?id=79429068",
+        "ToolTip": "Railgun"
+    }
+}
