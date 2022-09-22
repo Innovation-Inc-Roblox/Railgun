@@ -54,7 +54,7 @@ local ANIMATION_FUNCTIONS = {
 
         --Reload the gun.
         local ReloadTweenInfo = TweenInfo.new(0.15)
-        MoveLimbFunction("LeftShoulder", CFrame.new(-0.8, 1.3, 1) * CFrame.fromEulerAnglesXYZ(0.9, 0, 0.3), nil,ReloadTweenInfo)
+        MoveLimbFunction("LeftShoulder", CFrame.new(-0.8, 0.8, 0.6) * CFrame.new(0, 0.6, 0.6) * CFrame.fromEulerAnglesXYZ(0.9, 0, 0.3), nil,ReloadTweenInfo)
         task.wait(0.2)
         MoveLimbFunction("LeftShoulder", CFrame.new(-0.8, 0.8, 0.6) * CFrame.fromEulerAnglesXYZ(0.9, 0, 0.3), nil,ReloadTweenInfo)
         task.wait(0.2)
