@@ -20,5 +20,5 @@ Official distribution is currently controlled by TheNexusAvenger.
 
 ## License
 The Innovation Security Railgun is available under
-the terms of the MIT  Liscence. See [LICENSE](LICENSE)
+the terms of the MIT License. See [LICENSE](LICENSE)
 for details.

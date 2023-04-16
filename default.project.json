@@ -1,6 +1,9 @@
 {
     "name": "Railgun",
     "tree": {
-        "$path": "src"
+        "$path": "src",
+        "NexusAppendage": {
+            "$path": "module/Nexus-Appendage"
+        }
     }
 }

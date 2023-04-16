@@ -3,6 +3,7 @@ TheNexusAvenger
 
 Stores the state of the railguns on the server.
 --]]
+--!strict
 
 local SCRIPTS_TO_REPLICATE = {
     script:WaitForChild("RailgunAnimationScript"),
@@ -57,19 +58,19 @@ PlayAnimationLocal.Name = "PlayAnimation"
 PlayAnimationLocal.Parent = RailgunAnimationEventsLocal
 
 --Add the animation script.
-for _, Script in pairs(SCRIPTS_TO_REPLICATE) do
+for _, Script in SCRIPTS_TO_REPLICATE do
     local ClonedRailgunAnimationScript = Script:Clone()
     ClonedRailgunAnimationScript.Disabled = false
     ClonedRailgunAnimationScript.Parent = game:GetService("StarterPlayer"):WaitForChild("StarterPlayerScripts")
 
-    for _, Player in pairs(Players:GetPlayers()) do
+    for _, Player in Players:GetPlayers() do
         local ScreenGui = Instance.new("ScreenGui")
         ScreenGui.Name = Script.Name.."Container"
         ScreenGui.ResetOnSpawn = false
 
-        local ClonedRailgunAnimationScript = Script:Clone()
-        ClonedRailgunAnimationScript.Disabled = false
-        ClonedRailgunAnimationScript.Parent = ScreenGui
+        local PlayerClonedRailgunAnimationScript = ClonedRailgunAnimationScript:Clone()
+        PlayerClonedRailgunAnimationScript.Disabled = false
+        PlayerClonedRailgunAnimationScript.Parent = ScreenGui
         ScreenGui.Parent = Player:FindFirstChild("PlayerGui")
     end
 end
@@ -78,7 +79,7 @@ end
 local LastPlayerAnimations = {}
 EquipPlayerLocal.Event:Connect(function(Player: Player, InitialAnimation: string)
     EquipPlayer:FireAllClients(Player,InitialAnimation)
-    LastPlayerAnimations[Player] = {Player.Character,InitialAnimation}
+    LastPlayerAnimations[Player] = {Character = Player.Character, Animation = InitialAnimation}
 end)
 
 UnequipPlayerLocal.Event:Connect(function(Player: Player)
@@ -89,7 +90,7 @@ end)
 PlayAnimationLocal.Event:Connect(function(Player: Player, Animation: string)
     PlayAnimation:FireAllClients(Player, Animation)
     if LastPlayerAnimations[Player] then
-        LastPlayerAnimations[Player][2] = Animation
+        LastPlayerAnimations[Player].Animation = Animation
     end
 end)
 
@@ -97,9 +98,9 @@ end)
 function GetPlayerAnimations.OnServerInvoke()
     --Create the list of animations.
     local Animations = {}
-    for Player, Data in pairs(LastPlayerAnimations) do
-        if Player.Parent and Player.Character == Data[1] then
-            table.insert(Animations, {Player, Data[2]})
+    for Player, Data in LastPlayerAnimations do
+        if Player.Parent and Player.Character == Data.Character then
+            table.insert(Animations, {Player = Player, Animation = Data.Animation})
         end
     end
 

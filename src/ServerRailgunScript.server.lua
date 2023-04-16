@@ -3,6 +3,7 @@ TheNexusAvenger
 
 Controls the railgun on the server.
 --]]
+--!strict
 
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
@@ -36,6 +37,7 @@ end
 if not ServerScriptService:FindFirstChild("RailgunAnimationStateScript") then
     local NewScript = script.Parent:WaitForChild("RailgunAnimationStateScript"):Clone()
     NewScript.Disabled = false
+    script.Parent:WaitForChild("NexusAppendage"):Clone().Parent = NewScript:WaitForChild("RailgunAnimationScript")
     NewScript.Parent = ServerScriptService
 end
 
@@ -60,21 +62,22 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
             Tool.Enabled = false
 
             --Create the rail.
+            local MaterialPhysics = PhysicalProperties.new(Enum.Material.Metal)
             local Rail = Instance.new("Part")
             Rail.BrickColor = BrickColor.new("Dark stone grey")
             Rail.Material = Enum.Material.Metal
             Rail.Name = "Rail"
             Rail.Size = Vector3.new(0.4, 0.6, 8)
-            Rail.Friction = 1
+            Rail.CustomPhysicalProperties = PhysicalProperties.new(MaterialPhysics.Density, MaterialPhysics.Elasticity, 1)
             Debris:AddItem(Rail, 10)
 
             local Overrides = Configuration:FindFirstChild("Overrides")
             if Overrides then
                 local TrailOverrides = Overrides:FindFirstChild("Rail")
                 if TrailOverrides then
-                    for _, Value in pairs(TrailOverrides:GetChildren()) do
+                    for _, Value in TrailOverrides:GetChildren() do
                         if Value:IsA("ValueBase") then
-                            Rail[Value.Name] = Value.Value
+                            (Rail :: any)[Value.Name] = Value.Value
                         end
                     end
                 end
@@ -88,7 +91,7 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
             --Move the rail.
             local StartPosition = RailEnd.WorldPosition
             local OnHitModule = Configuration:FindFirstChild("OnHit")
-            local OnHitCallback = OnHitModule and require(OnHitModule)
+            local OnHitCallback = OnHitModule and require(OnHitModule) :: (Tool, BasePart, BasePart?, Humanoid?) -> ()
             if HitPart and HitPart.Parent then
                 --Damage the hit character.
                 local HitCharacter = HitPart.Parent
@@ -102,18 +105,18 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
                     end
 
                     --Add the tag.
-                    CreatorTag = Instance.new("ObjectValue")
-                    CreatorTag.Name = "creator"
-                    CreatorTag.Value = Player
-                    Debris:AddItem(CreatorTag, 2)
-                    CreatorTag.Parent = HitHumanoid
+                    local NewCreatorTag = Instance.new("ObjectValue")
+                    NewCreatorTag.Name = "creator"
+                    NewCreatorTag.Value = Player
+                    Debris:AddItem(NewCreatorTag, 2)
+                    NewCreatorTag.Parent = HitHumanoid
 
                     --Damage the humanoid.
                     HitHumanoid:TakeDamage(GetConfigurableItem("Damage"))
                 end
 
                 --Move and weld the rail.
-                local EndCFrame = CFrame.new(EndPosition,StartPosition) * CFrame.new(0,0,(math.random() * (Rail.Size.Z - 2)) - ((Rail.Size.Z - 2)/2))
+                local EndCFrame = CFrame.new(EndPosition, StartPosition) * CFrame.new(0,0,(math.random() * (Rail.Size.Z - 2)) - ((Rail.Size.Z - 2)/2))
                 Rail.CFrame = EndCFrame
 
                 local Weld = Instance.new("Weld")
@@ -127,8 +130,8 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
                 --Set the velocity.
                 if not HitPart.Anchored then
                     local AssemblyAnchored = false
-                    for _, ConnectedPart in pairs(HitPart:GetConnectedParts(true)) do
-                        if ConnectedPart.Anchored then
+                    for _, ConnectedPart in HitPart:GetConnectedParts(true) do
+                        if (ConnectedPart :: BasePart).Anchored then
                             AssemblyAnchored = true
                             break
                         end
@@ -140,7 +143,7 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
                 if OnHitCallback then OnHitCallback(Tool, Rail, HitPart, HitHumanoid) end
             else
                 Rail.CFrame = CFrame.new(EndPosition, EndPosition + Direction)
-                Rail.Velocity = Direction * 300
+                Rail.AssemblyLinearVelocity = Direction * 300
                 Rail.Parent = Workspace
                 if OnHitCallback then OnHitCallback(Tool, Rail) end
             end

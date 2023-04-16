@@ -3,13 +3,14 @@ TheNexusAvenger
 
 Handles local animations for the Railgun tools.
 --]]
+--!strict
 
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 
-local RemotesContainer = game.ReplicatedStorage:WaitForChild("RailgunAnimationEvents")
+local RemotesContainer = ReplicatedStorage:WaitForChild("RailgunAnimationEvents")
 local R6Animator = require(script:WaitForChild("R6Animator"))
 local R15Animator = require(script:WaitForChild("R15Animator"))
 local RailgunNoAnimationPlayersValue = ReplicatedStorage:WaitForChild("RailgunNoAnimationPlayers")
@@ -17,22 +18,24 @@ local RailgunNoAnimationPlayers = HttpService:JSONDecode(RailgunNoAnimationPlaye
 
 local PlayerAnimators = {}
 
+type MoveLimbFunction = (string, CFrame?, CFrame?, TweenInfo?) -> ()
+
 
 
 local ANIMATION_FUNCTIONS = {
-    RaiseWeapon = function(MoveLimbFunction)
+    RaiseWeapon = function(MoveLimbFunction: MoveLimbFunction)
         local AnimationTweenInfo = TweenInfo.new(0.5)
         MoveLimbFunction("RightGrip", CFrame.new(-0.3, -1, 0) * CFrame.fromEulerAnglesXYZ(-1.22 - 0.15, -0.45, 0.22))
         MoveLimbFunction("RightShoulder", CFrame.new(1.5, 0.5, -0.2) * CFrame.fromEulerAnglesXYZ(1.4, 0, -0.5), nil, AnimationTweenInfo)
         MoveLimbFunction("LeftShoulder", CFrame.new(-1.2, 0.2, 0.4) * CFrame.fromEulerAnglesXYZ(1.7, 0, 0.5), CFrame.new(0.3, 2, 0), AnimationTweenInfo)
     end,
-    LowerWeapon = function(MoveLimbFunction)
+    LowerWeapon = function(MoveLimbFunction: MoveLimbFunction)
         local AnimationTweenInfo = TweenInfo.new(0.5)
         MoveLimbFunction("RightGrip", CFrame.new(-0.3, -1, 0) * CFrame.fromEulerAnglesXYZ(-1.22 - 0.15, -0.45, 0.22))
         MoveLimbFunction("RightShoulder", CFrame.new(1.5, 0.5, -0.2) * CFrame.fromEulerAnglesXYZ(0.5, 0, -0.5), nil, AnimationTweenInfo)
         MoveLimbFunction("LeftShoulder", CFrame.new(-1.7, 0.5, 0.1) * CFrame.fromEulerAnglesXYZ(0.7, 0, 0.8), CFrame.new(0.3, 2, 0), AnimationTweenInfo)
     end,
-    FireAndReload = function(MoveLimbFunction)
+    FireAndReload = function(MoveLimbFunction: MoveLimbFunction)
         --Move the arms to the correct position.
         MoveLimbFunction("RightGrip", CFrame.new(-0.3, -1, 0) * CFrame.fromEulerAnglesXYZ(-1.22 - 0.15, -0.45, 0.22))
         MoveLimbFunction("RightShoulder", CFrame.new(1.5,0.5,-0.2) * CFrame.fromEulerAnglesXYZ(1.4, 0, -0.5))
@@ -71,7 +74,7 @@ local ANIMATION_FUNCTIONS = {
 --[[
 Equips a player.
 --]]
-local function EquipPlayer(Player: Player, InitialAnimation: string): nil
+local function EquipPlayer(Player: Player, InitialAnimation: string): ()
     --Return if animations are disabled for the player.
     if RailgunNoAnimationPlayers[tostring(Player.UserId)] then
         return
@@ -98,7 +101,7 @@ local function EquipPlayer(Player: Player, InitialAnimation: string): nil
     end
 
     --Create the animator.
-    local AnimationController = (Humanoid.RigType == Enum.HumanoidRigType.R6 and R6Animator(Player) or R15Animator(Player))
+    local AnimationController = (Humanoid.RigType == Enum.HumanoidRigType.R6 and R6Animator(Player) or R15Animator(Player)) :: any
     PlayerAnimators[Player] = AnimationController
 
     --Play the initial animation.
@@ -149,9 +152,9 @@ RemotesContainer:WaitForChild("DisplayTrail").OnClientEvent:Connect(function(Sta
             if Overrides then
                 local TrailOverrides = Overrides:FindFirstChild("Trail")
                 if TrailOverrides then
-                    for _, Value in pairs(TrailOverrides:GetChildren()) do
+                    for _, Value in TrailOverrides:GetChildren() do
                         if Value:IsA("ValueBase") then
-                            Trail[Value.Name] = Value.Value
+                            (Trail :: any)[Value.Name] = (Value :: any).Value
                         end
                     end
                 end
@@ -192,8 +195,8 @@ RemotesContainer:WaitForChild("PlayAnimation").OnClientEvent:Connect(function(Pl
 end)
 
 --Fetch the existing states.
-for _,AnimationData in pairs(RemotesContainer:WaitForChild("GetPlayerAnimations"):InvokeServer()) do
-    local Player, LastAnimation = AnimationData[1], AnimationData[2]
+for _,AnimationData in RemotesContainer:WaitForChild("GetPlayerAnimations"):InvokeServer() do
+    local Player, LastAnimation = AnimationData.Player, AnimationData.Animation
     task.spawn(function()
         while not Player.Character do task.wait() end
         while not Player.Character:FindFirstChildOfClass("Humanoid") do task.wait() end

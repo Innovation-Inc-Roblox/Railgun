@@ -3,6 +3,7 @@ TheNexusAvenger
 
 Fires rails on the client.
 --]]
+--!strict
 
 local GUN_ICON = "rbxasset://textures/GunCursor.png"
 local GUN_RELOAD_ICON = "rbxasset://textures/GunWaitCursor.png"
@@ -26,7 +27,7 @@ local RailgunNoAnimationPlayers = HttpService:JSONDecode(RailgunNoAnimationPlaye
 
 local DB = true
 local Equipped = false
-local HoldDownStartTime = nil
+local HoldDownStartTime: number? = nil
 local WeaponLowered = false
 local InputEvents = {}
 
@@ -52,13 +53,13 @@ end
 Ray casts from a point and direction until a specific
 length or a collidable part has been hit.
 --]]
-local function RayCast(StartPosition: Vector3, Direction: Vector3, MaxLength: number): (BasePart, Vector3)
+local function RayCast(StartPosition: Vector3, Direction: Vector3, MaxLength: number): (BasePart?, Vector3)
 	--Cast rays until a valid part is reached.
     local EndPosition = StartPosition + (Direction * MaxLength)
     local IgnoreList = {Tool.Parent}
 	local RaycastResult = nil
 	local RaycastParameters = RaycastParams.new()
-	RaycastParameters.FilterType = Enum.RaycastFilterType.Blacklist
+	RaycastParameters.FilterType = Enum.RaycastFilterType.Exclude
 	RaycastParameters.FilterDescendantsInstances = IgnoreList
 	RaycastParameters.IgnoreWater = true
 	repeat
@@ -89,14 +90,14 @@ end
 --[[
 Connects sets up the tool for equipping.
 --]]
-local function OnEquip(Mouse: Mouse): nil
+local function OnEquip(Mouse: Mouse): ()
     Mouse.Icon = GUN_ICON
     Equipped = true
 
     --[[
     Fires a rail.
     --]]
-    local function FireRail(): nil
+    local function FireRail(): ()
         --Check if the character is intact.
         local Character = Tool.Parent
         if Character and not WeaponLowered then
@@ -149,7 +150,7 @@ local function OnEquip(Mouse: Mouse): nil
     --[[
     Starts firing the railgun.
     --]]
-    local function StartFiring(): nil
+    local function StartFiring(): ()
         if HoldDownStartTime then return end
         if WeaponLowered then return end
 
@@ -168,7 +169,7 @@ local function OnEquip(Mouse: Mouse): nil
     --[[
     Stops firing the railgun.
     --]]
-    local function StopFiring(): nil
+    local function StopFiring(): ()
         HoldDownStartTime = nil
     end
 
@@ -189,13 +190,13 @@ local function OnEquip(Mouse: Mouse): nil
         end
     end))
 
-    table.insert(InputEvents,UserInputService.InputEnded:Connect(function(Input: InputObject)
+    table.insert(InputEvents, UserInputService.InputEnded:Connect(function(Input: InputObject)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             StopFiring()
         end
     end))
 
-    table.insert(InputEvents,UserInputService.InputChanged:Connect(function(Input: InputObject)
+    table.insert(InputEvents, UserInputService.InputChanged:Connect(function(Input: InputObject)
         if Input.KeyCode == Enum.KeyCode.ButtonR2 then
             if Input.Position.Z > 0.7 then
                 StartFiring()
@@ -220,12 +221,12 @@ end
 --[[
 Cleans up the tool for unequipping.
 --]]
-local function OnUnequip(): nil
+local function OnUnequip(): ()
     Equipped = false
     HoldDownStartTime = nil
 
     --Disconnect the events.
-    for _,Event in pairs(InputEvents) do
+    for _,Event in InputEvents do
         Event:Disconnect()
     end
     InputEvents = {}

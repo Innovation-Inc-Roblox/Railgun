@@ -5,6 +5,7 @@ Handles detection of VR players.
 Run as a separate script in case third-party VR implementations
 want to use it.
 --]]
+--!strict
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -21,14 +22,14 @@ if not ReplicatedStorage:FindFirstChild("RailgunVRPlayers") then
     VRPlayersValue.Value = "{}"
     VRPlayersValue.Parent = ReplicatedStorage
 end
-VRPlayersValue = ReplicatedStorage:WaitForChild("RailgunNoAnimationPlayers")
+local VRPlayersValue = ReplicatedStorage:WaitForChild("RailgunNoAnimationPlayers")
 
 
 
 --[[
 Connects Nexus VR Character Model.
 --]]
-local function ConnectNexusVRCharacterModel(): nil
+local function ConnectNexusVRCharacterModel(): ()
     --Return if Nexus VR Character Model is already connected or doesn't exist.
     if NexusVRCharacterModelDetected then return end
     local NexusVRCharacterModel = ReplicatedStorage:FindFirstChild("NexusVRCharacterModel")

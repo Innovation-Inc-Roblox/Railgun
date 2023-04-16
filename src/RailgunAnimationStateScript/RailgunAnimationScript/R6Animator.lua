@@ -3,6 +3,7 @@ TheNexusAvenger
 
 Handles moving R6 joints.
 --]]
+--!strict
 
 local TweenService = game:GetService("TweenService")
 
@@ -21,12 +22,12 @@ return function(Player: Player)
 
     --Get the components.
     --A Torso and RightArm are assumed to exist.
-    local Torso = Character:WaitForChild("Torso")
-    local LeftArm = Character:FindFirstChild("Left Arm")
-    local RightArm = Character:WaitForChild("Right Arm")
-    local LeftShoulder = Torso:FindFirstChild("Left Shoulder")
-    local RightShoulder = Torso:FindFirstChild("Right Shoulder")
-    local RightGrip = RightArm:WaitForChild("RightGrip")
+    local Torso = Character:WaitForChild("Torso") :: BasePart
+    local LeftArm = Character:FindFirstChild("Left Arm") :: BasePart
+    local RightArm = Character:WaitForChild("Right Arm") :: BasePart
+    local LeftShoulder = Torso:FindFirstChild("Left Shoulder") :: Motor6D
+    local RightShoulder = Torso:FindFirstChild("Right Shoulder") :: Motor6D
+    local RightGrip = RightArm:WaitForChild("RightGrip") :: Weld
 
     --Create the welds.
     local LeftWeld,RightWeld = nil, nil
@@ -54,12 +55,12 @@ return function(Player: Player)
     end
 
     --Create the psuedo-object.
-    local AnimationController = {}
+    local AnimationController = {} :: any
 
     --[[
     Plays an animation.
     --]]
-    function AnimationController:PlayAnimation(AnimationData)
+    function AnimationController:PlayAnimation(AnimationData): ()
         --Stop the current animation.
         if AnimationController.CurrentAnimation then
             AnimationController.CurrentAnimation:Stop()
@@ -78,7 +79,7 @@ return function(Player: Player)
                 self.Active = false
 
                 --Stop the tweens.
-                for _,Tween in pairs(self.Tweens) do
+                for _, Tween in self.Tweens do
                     Tween:Cancel()
                 end
             end
@@ -98,7 +99,7 @@ return function(Player: Player)
                         self.Tweens[TweenName] = TweenService:Create(Ins, TweenInfoObject, {[Property]=Value})
                         self.Tweens[TweenName]:Play()
                     else
-                        Ins[Property] = Value
+                        (Ins :: any)[Property] = Value
                     end
                 end
             end
@@ -132,7 +133,7 @@ return function(Player: Player)
 
                     --Move the limb if it exists.
                     if Weld then
-                        for Property,Target in pairs(Properties) do
+                        for Property, Target in Properties :: {[string]: any} do
                             self:Tween(Weld, Property, Target, TweenInfoObject)
                         end
                     end
@@ -140,22 +141,22 @@ return function(Player: Player)
             end
 
             --Play the animation.
-            Animation:Play()
+            (Animation :: any):Play()
         end
     end
 
     --[[
     Destroys the animation controller.
     --]]
-    function AnimationController:Destroy()
+    function AnimationController:Destroy(): ()
         --Remove the welds.
         if LeftWeld then
             LeftWeld:Destroy()
-            LeftWeld = nil
+            LeftWeld = nil :: any
         end
         if RightWeld then
             RightWeld:Destroy()
-            RightWeld = nil
+            RightWeld = nil :: any
         end
 
         --Reset the shoulders.
