@@ -163,7 +163,10 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
             PlayAnimation:Fire(Player, "FireAndReload")
 
             --Enable the tool.
-            task.wait(GetConfigurableItem("ReloadTime"))
+            local ReloadTime = GetConfigurableItem("ReloadTime")
+            if ReloadTime > 0 then
+                task.wait(ReloadTime)
+            end
             Tool.Enabled = true
         end
     end

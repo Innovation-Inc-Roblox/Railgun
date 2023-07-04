@@ -22,6 +22,7 @@ local LowerWeapon = Tool:WaitForChild("LowerWeapon")
 local Configuration = Tool:WaitForChild("Configuration")
 local FireBackAtPlayerWhenThroughWallValue = Configuration:WaitForChild("FireBackAtPlayerWhenThroughWall")
 local FullAutomaticValue = Configuration:WaitForChild("FullAutomatic")
+local ReloadTimeValue = Configuration:WaitForChild("ReloadTime")
 local RailgunNoAnimationPlayersValue = ReplicatedStorage:WaitForChild("RailgunNoAnimationPlayers")
 local RailgunNoAnimationPlayers = HttpService:JSONDecode(RailgunNoAnimationPlayersValue.Value)
 
@@ -137,8 +138,12 @@ local function OnEquip(Mouse: Mouse): ()
                 FireWeapon:FireServer(Direction, HitPart, HitEndPosition, StartPosition)
 
                 --Wait for the tool to be enabled.
-                while not Tool.Enabled do
-                    Tool.Changed:Wait()
+                if ReloadTimeValue.Value > 0 then
+                    while not Tool.Enabled do
+                        Tool.Changed:Wait()
+                    end
+                else
+                    task.wait()
                 end
                 if Equipped then
                     Mouse.Icon = GUN_ICON
