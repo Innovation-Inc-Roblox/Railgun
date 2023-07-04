@@ -101,6 +101,7 @@ local function OnEquip(Mouse: Mouse): ()
     local function FireRail(): ()
         --Check if the character is intact.
         local Character = Tool.Parent
+        local LoopWaited = false
         if Character and not WeaponLowered then
             local Head = Character:FindFirstChild("Head")
             local Humanoid = Character:FindFirstChildOfClass("Humanoid")
@@ -138,6 +139,7 @@ local function OnEquip(Mouse: Mouse): ()
                 FireWeapon:FireServer(Direction, HitPart, HitEndPosition, StartPosition)
 
                 --Wait for the tool to be enabled.
+                LoopWaited = true
                 if ReloadTimeValue.Value > 0 then
                     while not Tool.Enabled do
                         Tool.Changed:Wait()
@@ -149,6 +151,12 @@ local function OnEquip(Mouse: Mouse): ()
                     Mouse.Icon = GUN_ICON
                 end
             end
+        end
+
+        --Wait 1 step if no wait was done.
+        --This prevents an infinite loop when the player is invalid.
+        if FullAutomaticValue.Value and not LoopWaited then
+            task.wait()
         end
     end
 
