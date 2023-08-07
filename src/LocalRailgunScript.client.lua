@@ -58,7 +58,7 @@ local function RayCast(StartPosition: Vector3, Direction: Vector3, MaxLength: nu
     local IgnoreList = {Tool.Parent}
 	local RaycastResult = nil
 	local RaycastParameters = RaycastParams.new()
-	RaycastParameters.FilterType = Enum.RaycastFilterType.Blacklist
+	RaycastParameters.FilterType = Enum.RaycastFilterType.Exclude
 	RaycastParameters.FilterDescendantsInstances = IgnoreList
 	RaycastParameters.IgnoreWater = true
 	repeat
