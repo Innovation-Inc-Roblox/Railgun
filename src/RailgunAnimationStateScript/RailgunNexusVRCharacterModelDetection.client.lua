@@ -28,7 +28,7 @@ VRPlayersValue = ReplicatedStorage:WaitForChild("RailgunNoAnimationPlayers")
 --[[
 Connects Nexus VR Character Model.
 --]]
-local function ConnectNexusVRCharacterModel(): nil
+local function ConnectNexusVRCharacterModel(): ()
     --Return if Nexus VR Character Model is already connected or doesn't exist.
     if NexusVRCharacterModelDetected then return end
     local NexusVRCharacterModel = ReplicatedStorage:FindFirstChild("NexusVRCharacterModel")

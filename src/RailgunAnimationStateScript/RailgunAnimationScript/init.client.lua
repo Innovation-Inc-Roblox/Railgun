@@ -71,7 +71,7 @@ local ANIMATION_FUNCTIONS = {
 --[[
 Equips a player.
 --]]
-local function EquipPlayer(Player: Player, InitialAnimation: string): nil
+local function EquipPlayer(Player: Player, InitialAnimation: string): ()
     --Return if animations are disabled for the player.
     if RailgunNoAnimationPlayers[tostring(Player.UserId)] then
         return

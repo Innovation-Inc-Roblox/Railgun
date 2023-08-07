@@ -52,7 +52,7 @@ end
 Ray casts from a point and direction until a specific
 length or a collidable part has been hit.
 --]]
-local function RayCast(StartPosition: Vector3, Direction: Vector3, MaxLength: number): (BasePart, Vector3)
+local function RayCast(StartPosition: Vector3, Direction: Vector3, MaxLength: number): (BasePart?, Vector3)
 	--Cast rays until a valid part is reached.
     local EndPosition = StartPosition + (Direction * MaxLength)
     local IgnoreList = {Tool.Parent}
@@ -89,14 +89,14 @@ end
 --[[
 Connects sets up the tool for equipping.
 --]]
-local function OnEquip(Mouse: Mouse): nil
+local function OnEquip(Mouse: Mouse): ()
     Mouse.Icon = GUN_ICON
     Equipped = true
 
     --[[
     Fires a rail.
     --]]
-    local function FireRail(): nil
+    local function FireRail(): ()
         --Check if the character is intact.
         local Character = Tool.Parent
         if Character and not WeaponLowered then
@@ -149,7 +149,7 @@ local function OnEquip(Mouse: Mouse): nil
     --[[
     Starts firing the railgun.
     --]]
-    local function StartFiring(): nil
+    local function StartFiring(): ()
         if HoldDownStartTime then return end
         if WeaponLowered then return end
 
@@ -168,7 +168,7 @@ local function OnEquip(Mouse: Mouse): nil
     --[[
     Stops firing the railgun.
     --]]
-    local function StopFiring(): nil
+    local function StopFiring(): ()
         HoldDownStartTime = nil
     end
 
@@ -220,7 +220,7 @@ end
 --[[
 Cleans up the tool for unequipping.
 --]]
-local function OnUnequip(): nil
+local function OnUnequip(): ()
     Equipped = false
     HoldDownStartTime = nil
 
