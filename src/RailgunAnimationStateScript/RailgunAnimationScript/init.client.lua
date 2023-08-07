@@ -9,7 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 
-local RemotesContainer = game.ReplicatedStorage:WaitForChild("RailgunAnimationEvents")
+local RemotesContainer = ReplicatedStorage:WaitForChild("RailgunAnimationEvents")
 local R6Animator = require(script:WaitForChild("R6Animator"))
 local R15Animator = require(script:WaitForChild("R15Animator"))
 local RailgunNoAnimationPlayersValue = ReplicatedStorage:WaitForChild("RailgunNoAnimationPlayers")
