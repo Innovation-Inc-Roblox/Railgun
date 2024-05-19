@@ -3,39 +3,38 @@ TheNexusAvenger
 
 Handles local animations for the Railgun tools.
 --]]
---!strict
 
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
+local VRService = game:GetService("VRService")
 
 local RemotesContainer = ReplicatedStorage:WaitForChild("RailgunAnimationEvents")
+local RailgunNoAnimationPlayersValue = RemotesContainer:WaitForChild("RailgunNoAnimationPlayers")
+local VRPlayerJoinedEvent = RemotesContainer:WaitForChild("VRPlayerJoined")
 local R6Animator = require(script:WaitForChild("R6Animator"))
 local R15Animator = require(script:WaitForChild("R15Animator"))
-local RailgunNoAnimationPlayersValue = ReplicatedStorage:WaitForChild("RailgunNoAnimationPlayers")
 local RailgunNoAnimationPlayers = HttpService:JSONDecode(RailgunNoAnimationPlayersValue.Value)
 
 local PlayerAnimators = {}
 
-type MoveLimbFunction = (string, CFrame?, CFrame?, TweenInfo?) -> ()
-
 
 
 local ANIMATION_FUNCTIONS = {
-    RaiseWeapon = function(MoveLimbFunction: MoveLimbFunction)
+    RaiseWeapon = function(MoveLimbFunction)
         local AnimationTweenInfo = TweenInfo.new(0.5)
         MoveLimbFunction("RightGrip", CFrame.new(-0.3, -1, 0) * CFrame.fromEulerAnglesXYZ(-1.22 - 0.15, -0.45, 0.22))
         MoveLimbFunction("RightShoulder", CFrame.new(1.5, 0.5, -0.2) * CFrame.fromEulerAnglesXYZ(1.4, 0, -0.5), nil, AnimationTweenInfo)
         MoveLimbFunction("LeftShoulder", CFrame.new(-1.2, 0.2, 0.4) * CFrame.fromEulerAnglesXYZ(1.7, 0, 0.5), CFrame.new(0.3, 2, 0), AnimationTweenInfo)
     end,
-    LowerWeapon = function(MoveLimbFunction: MoveLimbFunction)
+    LowerWeapon = function(MoveLimbFunction)
         local AnimationTweenInfo = TweenInfo.new(0.5)
         MoveLimbFunction("RightGrip", CFrame.new(-0.3, -1, 0) * CFrame.fromEulerAnglesXYZ(-1.22 - 0.15, -0.45, 0.22))
         MoveLimbFunction("RightShoulder", CFrame.new(1.5, 0.5, -0.2) * CFrame.fromEulerAnglesXYZ(0.5, 0, -0.5), nil, AnimationTweenInfo)
         MoveLimbFunction("LeftShoulder", CFrame.new(-1.7, 0.5, 0.1) * CFrame.fromEulerAnglesXYZ(0.7, 0, 0.8), CFrame.new(0.3, 2, 0), AnimationTweenInfo)
     end,
-    FireAndReload = function(MoveLimbFunction: MoveLimbFunction)
+    FireAndReload = function(MoveLimbFunction)
         --Move the arms to the correct position.
         MoveLimbFunction("RightGrip", CFrame.new(-0.3, -1, 0) * CFrame.fromEulerAnglesXYZ(-1.22 - 0.15, -0.45, 0.22))
         MoveLimbFunction("RightShoulder", CFrame.new(1.5,0.5,-0.2) * CFrame.fromEulerAnglesXYZ(1.4, 0, -0.5))
@@ -57,7 +56,7 @@ local ANIMATION_FUNCTIONS = {
 
         --Reload the gun.
         local ReloadTweenInfo = TweenInfo.new(0.15)
-        MoveLimbFunction("LeftShoulder", CFrame.new(-0.8, 0.8, 0.6) * CFrame.new(0, 0.6, 0.6) * CFrame.fromEulerAnglesXYZ(0.9, 0, 0.3), nil,ReloadTweenInfo)
+        MoveLimbFunction("LeftShoulder", CFrame.new(-0.8, 1.3, 1) * CFrame.fromEulerAnglesXYZ(0.9, 0, 0.3), nil,ReloadTweenInfo)
         task.wait(0.2)
         MoveLimbFunction("LeftShoulder", CFrame.new(-0.8, 0.8, 0.6) * CFrame.fromEulerAnglesXYZ(0.9, 0, 0.3), nil,ReloadTweenInfo)
         task.wait(0.2)
@@ -101,7 +100,7 @@ local function EquipPlayer(Player: Player, InitialAnimation: string): ()
     end
 
     --Create the animator.
-    local AnimationController = (Humanoid.RigType == Enum.HumanoidRigType.R6 and R6Animator(Player) or R15Animator(Player)) :: any
+    local AnimationController = (Humanoid.RigType == Enum.HumanoidRigType.R6 and R6Animator(Player) or R15Animator(Player))
     PlayerAnimators[Player] = AnimationController
 
     --Play the initial animation.
@@ -130,6 +129,7 @@ RemotesContainer:WaitForChild("DisplayTrail").OnClientEvent:Connect(function(Sta
 
     --Create the trail.
     local Trail = Instance.new("Part")
+    Trail.CastShadow = false
     Trail.Color = Color3.new(1, 1, 1)
     Trail.Material = Enum.Material.SmoothPlastic
     Trail.Name = "Effect"
@@ -152,9 +152,9 @@ RemotesContainer:WaitForChild("DisplayTrail").OnClientEvent:Connect(function(Sta
             if Overrides then
                 local TrailOverrides = Overrides:FindFirstChild("Trail")
                 if TrailOverrides then
-                    for _, Value in TrailOverrides:GetChildren() do
+                    for _, Value in pairs(TrailOverrides:GetChildren()) do
                         if Value:IsA("ValueBase") then
-                            (Trail :: any)[Value.Name] = (Value :: any).Value
+                            Trail[Value.Name] = Value.Value
                         end
                     end
                 end
@@ -196,10 +196,19 @@ end)
 
 --Fetch the existing states.
 for _,AnimationData in RemotesContainer:WaitForChild("GetPlayerAnimations"):InvokeServer() do
-    local Player, LastAnimation = AnimationData.Player, AnimationData.Animation
+    local Player, LastAnimation = AnimationData[1], AnimationData[2]
     task.spawn(function()
         while not Player.Character do task.wait() end
         while not Player.Character:FindFirstChildOfClass("Humanoid") do task.wait() end
         EquipPlayer(Player, LastAnimation)
+    end)
+end
+
+--Notify the server if the client is in VR.
+if VRService.VREnabled then
+    VRPlayerJoinedEvent:FireServer()
+else
+    VRService:GetPropertyChangedSignal("VREnabled"):Connect(function()
+        VRPlayerJoinedEvent:FireServer()
     end)
 end
