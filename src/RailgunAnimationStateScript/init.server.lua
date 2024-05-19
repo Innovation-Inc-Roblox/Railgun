@@ -4,10 +4,6 @@ TheNexusAvenger
 Stores the state of the railguns on the server.
 --]]
 
-local SCRIPTS_TO_REPLICATE = {
-    script:WaitForChild("RailgunAnimationScript"),
-}
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
@@ -89,22 +85,9 @@ end
 
 
 --Add the animation script.
-for _, Script in pairs(SCRIPTS_TO_REPLICATE) do
-    local ClonedRailgunAnimationScript = Script:Clone()
-    ClonedRailgunAnimationScript.Disabled = false
-    ClonedRailgunAnimationScript.Parent = game:GetService("StarterPlayer"):WaitForChild("StarterPlayerScripts")
-
-    for _, Player in pairs(Players:GetPlayers()) do
-        local ScreenGui = Instance.new("ScreenGui")
-        ScreenGui.Name = Script.Name.."Container"
-        ScreenGui.ResetOnSpawn = false
-
-        local ClonedRailgunAnimationScript = Script:Clone()
-        ClonedRailgunAnimationScript.Disabled = false
-        ClonedRailgunAnimationScript.Parent = ScreenGui
-        ScreenGui.Parent = Player:FindFirstChild("PlayerGui")
-    end
-end
+local ClonedRailgunAnimationScript = script:WaitForChild("RailgunAnimationScript"):Clone()
+ClonedRailgunAnimationScript.Disabled = false
+ClonedRailgunAnimationScript.Parent = ReplicatedStorage
 
 --Connect the local events.
 local LastPlayerAnimations = {}
