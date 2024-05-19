@@ -129,6 +129,7 @@ RemotesContainer:WaitForChild("DisplayTrail").OnClientEvent:Connect(function(Sta
 
     --Create the trail.
     local Trail = Instance.new("Part")
+    Trail.CastShadow = false
     Trail.Color = Color3.new(1, 1, 1)
     Trail.Material = Enum.Material.SmoothPlastic
     Trail.Name = "Effect"
