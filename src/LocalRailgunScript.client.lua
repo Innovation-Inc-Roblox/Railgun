@@ -13,6 +13,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
+local RemotesContainer = ReplicatedStorage:WaitForChild("RailgunAnimationEvents")
+local RailgunNoAnimationPlayersValue = RemotesContainer:WaitForChild("RailgunNoAnimationPlayers")
+
 local Tool = script.Parent
 local Handle = Tool:WaitForChild("Handle")
 local RailEnd = Handle:WaitForChild("RailEnd")
@@ -21,7 +24,6 @@ local LowerWeapon = Tool:WaitForChild("LowerWeapon")
 local Configuration = Tool:WaitForChild("Configuration")
 local FireBackAtPlayerWhenThroughWallValue = Configuration:WaitForChild("FireBackAtPlayerWhenThroughWall")
 local FullAutomaticValue = Configuration:WaitForChild("FullAutomatic")
-local RailgunNoAnimationPlayersValue = ReplicatedStorage:WaitForChild("RailgunNoAnimationPlayers")
 local RailgunNoAnimationPlayers = HttpService:JSONDecode(RailgunNoAnimationPlayersValue.Value)
 
 local DB = true

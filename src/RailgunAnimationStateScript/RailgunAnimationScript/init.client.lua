@@ -8,11 +8,13 @@ local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
+local VRService = game:GetService("VRService")
 
 local RemotesContainer = ReplicatedStorage:WaitForChild("RailgunAnimationEvents")
+local RailgunNoAnimationPlayersValue = RemotesContainer:WaitForChild("RailgunNoAnimationPlayers")
+local VRPlayerJoinedEvent = RemotesContainer:WaitForChild("VRPlayerJoined")
 local R6Animator = require(script:WaitForChild("R6Animator"))
 local R15Animator = require(script:WaitForChild("R15Animator"))
-local RailgunNoAnimationPlayersValue = ReplicatedStorage:WaitForChild("RailgunNoAnimationPlayers")
 local RailgunNoAnimationPlayers = HttpService:JSONDecode(RailgunNoAnimationPlayersValue.Value)
 
 local PlayerAnimators = {}
@@ -192,11 +194,20 @@ RemotesContainer:WaitForChild("PlayAnimation").OnClientEvent:Connect(function(Pl
 end)
 
 --Fetch the existing states.
-for _,AnimationData in pairs(RemotesContainer:WaitForChild("GetPlayerAnimations"):InvokeServer()) do
+for _,AnimationData in RemotesContainer:WaitForChild("GetPlayerAnimations"):InvokeServer() do
     local Player, LastAnimation = AnimationData[1], AnimationData[2]
     task.spawn(function()
         while not Player.Character do task.wait() end
         while not Player.Character:FindFirstChildOfClass("Humanoid") do task.wait() end
         EquipPlayer(Player, LastAnimation)
+    end)
+end
+
+--Notify the server if the client is in VR.
+if VRService.VREnabled then
+    VRPlayerJoinedEvent:FireServer()
+else
+    VRService:GetPropertyChangedSignal("VREnabled"):Connect(function()
+        VRPlayerJoinedEvent:FireServer()
     end)
 end
