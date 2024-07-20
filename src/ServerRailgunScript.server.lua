@@ -9,6 +9,8 @@ local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local CollectionService = game:GetService("CollectionService")
+local HttpService = game:GetService("HttpService")
 local Debris = game:GetService("Debris")
 
 local Tool = script.Parent
@@ -31,6 +33,13 @@ local function GetConfigurableItem(Name: string): any
     return Configuration:WaitForChild(Name).Value
 end
 
+--[[
+Sets the animation of the railgun.
+--]]
+local function SetAnimation(Name: string): ()
+    Tool:SetAttribute("LastRailgunAnimation", HttpService:JSONEncode({Name = Name, Time = tick()}))
+end
+
 
 
 --Set up the server animation script.
@@ -43,11 +52,7 @@ end
 
 --Get the events.
 local RailgunAnimationEvents = ReplicatedStorage:WaitForChild("RailgunAnimationEvents")
-local RailgunAnimationEventsLocal = RailgunAnimationEvents:WaitForChild("Local")
 local DisplayTrail = RailgunAnimationEvents:WaitForChild("DisplayTrail")
-local EquipPlayer = RailgunAnimationEventsLocal:WaitForChild("EquipPlayer")
-local UnequipPlayer = RailgunAnimationEventsLocal:WaitForChild("UnequipPlayer")
-local PlayAnimation = RailgunAnimationEventsLocal:WaitForChild("PlayAnimation")
 
 
 
@@ -160,7 +165,7 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
 
             --Invoke the clients to draw a beam and reload.
             DisplayTrail:FireAllClients(RailEnd, EndPosition)
-            PlayAnimation:Fire(Player, "FireAndReload")
+            SetAnimation("FireAndReload")
 
             --Enable the tool.
             local ReloadTime = GetConfigurableItem("ReloadTime")
@@ -178,9 +183,9 @@ LowerWeapon.OnServerEvent:Connect(function(Player: Player)
     if Character and Player.Character == Character then
         ToolHeldDown = not ToolHeldDown
         if ToolHeldDown then
-            PlayAnimation:Fire(Player, "LowerWeapon")
+            SetAnimation("LowerWeapon")
         else
-            PlayAnimation:Fire(Player, "RaiseWeapon")
+            SetAnimation("RaiseWeapon")
         end
     end
 end)
@@ -193,9 +198,9 @@ Tool.Equipped:Connect(function()
         local Player = Players:GetPlayerFromCharacter(Character)
         if Player then
             if ToolHeldDown then
-                EquipPlayer:Fire(Player, "LowerWeapon")
+                SetAnimation("LowerWeapon")
             else
-                EquipPlayer:Fire(Player, "RaiseWeapon")
+                SetAnimation("RaiseWeapon")
             end
             EquippedPlayer = Player
         end
@@ -205,7 +210,10 @@ end)
 --Connect tool unequiping.
 Tool.Unequipped:Connect(function()
     if EquippedPlayer then
-        UnequipPlayer:Fire(EquippedPlayer)
+        Tool:SetAttribute("LastRailgunAnimation", nil)
         EquippedPlayer = nil
     end
 end)
+
+--Add the animated railgun tag.
+CollectionService:AddTag(Tool, "AnimatedRailgun")

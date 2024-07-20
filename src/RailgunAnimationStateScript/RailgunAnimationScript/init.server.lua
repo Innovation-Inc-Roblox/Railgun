@@ -5,9 +5,11 @@ Handles local animations for the Railgun tools.
 --]]
 
 local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
+local CollectionService = game:GetService("CollectionService")
+local TweenService = game:GetService("TweenService")
 local VRService = game:GetService("VRService")
 
 local RemotesContainer = ReplicatedStorage:WaitForChild("RailgunAnimationEvents")
@@ -18,6 +20,7 @@ local R15Animator = require(script:WaitForChild("R15Animator"))
 local RailgunNoAnimationPlayers = HttpService:JSONDecode(RailgunNoAnimationPlayersValue.Value)
 
 local PlayerAnimators = {}
+local CurrentRailguns = {}
 
 
 
@@ -120,6 +123,74 @@ local function EquipPlayer(Player: Player, InitialAnimation: string): ()
     end
 end
 
+--[[
+Returns the player for a railgun, if one exists.
+--]]
+local function GetPlayerForRailgun(Railgun: Instance): Player?
+    local Character = Railgun.Parent
+    if not Character then return nil end
+    return Players:GetPlayerFromCharacter(Character)
+end
+
+--[[
+Updates a railgun. 
+--]]
+local function UpdateRailgun(Railgun: Tool): ()
+    --Return if there is no player.
+    local CurrentState = CurrentRailguns[Railgun]
+    if not CurrentState then return end
+    local CurrentPlayer = GetPlayerForRailgun(Railgun)
+    if not CurrentPlayer then
+        CurrentState.Equipped = false
+        return
+    end
+
+    --Return if the animation hasn't changed.
+    local NewAnimationName, NewAnimationTime = "", 0
+    local NewAnimationData = Railgun:GetAttribute("LastRailgunAnimation")
+    if NewAnimationData then
+        local NewAnimation = HttpService:JSONDecode(NewAnimationData)
+        NewAnimationName = NewAnimation.Name
+        NewAnimationTime = NewAnimation.Time
+    end
+    if CurrentState.LastAnimationName == NewAnimationName and CurrentState.LastAnimationTime == NewAnimationTime then return end
+
+    --Play the animation.
+    if not CurrentState.Equipped then
+        CurrentState.Equipped = true
+        EquipPlayer(CurrentPlayer, NewAnimationName)
+    elseif PlayerAnimators[CurrentPlayer] then
+        PlayerAnimators[CurrentPlayer]:PlayAnimation(ANIMATION_FUNCTIONS[NewAnimationName])
+    end
+end
+
+--[[
+Connects a railgun.
+--]]
+local function ConnectRailgun(Railgun: Tool): ()
+    if CurrentRailguns[Railgun] then return end
+
+    --Connect the events.
+    local Events = {}
+    table.insert(Events, Railgun.AncestryChanged:Connect(function()
+        UpdateRailgun(Railgun)
+    end))
+    table.insert(Events, Railgun:GetAttributeChangedSignal("LastRailgunAnimation"):Connect(function()
+        UpdateRailgun(Railgun)
+    end))
+
+    --Store the state.
+    CurrentRailguns[Railgun] = {
+        Equipped = false,
+        LastAnimationName = "",
+        LastAnimationTime = 0,
+        Events = Events,
+    }
+
+    --Update the initial state.
+    UpdateRailgun(Railgun)
+end
+
 
 
 --Connect displaying trails.
@@ -176,33 +247,23 @@ RailgunNoAnimationPlayersValue.Changed:Connect(function()
     RailgunNoAnimationPlayers = HttpService:JSONDecode(RailgunNoAnimationPlayersValue.Value)
 end)
 
---Connect equipping players.
-RemotesContainer:WaitForChild("EquipPlayer").OnClientEvent:Connect(EquipPlayer)
-
---Connect unequipping players.
-RemotesContainer:WaitForChild("UnequipPlayer").OnClientEvent:Connect(function(Player: Player)
-    if PlayerAnimators[Player] then
-        PlayerAnimators[Player]:Destroy()
-        PlayerAnimators[Player] = nil
-    end
-end)
-
---Connect playing animations.
-RemotesContainer:WaitForChild("PlayAnimation").OnClientEvent:Connect(function(Player: Player, AnimationName: string)
-    if PlayerAnimators[Player] then
-        PlayerAnimators[Player]:PlayAnimation(ANIMATION_FUNCTIONS[AnimationName])
-    end
-end)
-
---Fetch the existing states.
-for _,AnimationData in RemotesContainer:WaitForChild("GetPlayerAnimations"):InvokeServer() do
-    local Player, LastAnimation = AnimationData[1], AnimationData[2]
-    task.spawn(function()
-        while not Player.Character do task.wait() end
-        while not Player.Character:FindFirstChildOfClass("Humanoid") do task.wait() end
-        EquipPlayer(Player, LastAnimation)
-    end)
+--Connect the animated railguns.
+for _, RailgunTool in CollectionService:GetTagged("AnimatedRailgun") do
+    task.spawn(ConnectRailgun, RailgunTool)
 end
+CollectionService:GetInstanceAddedSignal("AnimatedRailgun"):Connect(function(RailgunTool)
+    ConnectRailgun(RailgunTool)
+end)
+CollectionService:GetInstanceRemovedSignal("AnimatedRailgun"):Connect(function(RailgunTool)
+    if not CurrentRailguns[RailgunTool] then return end
+    GetPlayerForRailgun(RailgunTool)
+    for _, Event in CurrentRailguns[RailgunTool].Events do
+        Event:Disconnect()
+    end
+    CurrentRailguns[RailgunTool] = nil
+end)
+
+
 
 --Notify the server if the client is in VR.
 if VRService.VREnabled then
