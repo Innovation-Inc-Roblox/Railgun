@@ -59,11 +59,10 @@ length or a collidable part has been hit.
 local function RayCast(StartPosition: Vector3, Direction: Vector3, MaxLength: number): (BasePart?, Vector3)
 	--Cast rays until a valid part is reached.
     local EndPosition = StartPosition + (Direction * MaxLength)
-    local IgnoreList = {Tool.Parent}
 	local RaycastResult = nil
 	local RaycastParameters = RaycastParams.new()
 	RaycastParameters.FilterType = Enum.RaycastFilterType.Exclude
-	RaycastParameters.FilterDescendantsInstances = IgnoreList
+	RaycastParameters.FilterDescendantsInstances = {Tool.Parent}
 	RaycastParameters.IgnoreWater = true
 	repeat
 		--Perform the raycast.
@@ -82,8 +81,7 @@ local function RayCast(StartPosition: Vector3, Direction: Vector3, MaxLength: nu
 		end
 
 		--Add the hit to the ignore list and allow it to retry.
-		table.insert(IgnoreList, HitPart)
-		RaycastParameters.FilterDescendantsInstances = IgnoreList
+        RaycastParameters:AddToFilter(HitPart)
 	until RaycastResult == nil
 
 	--Return the end position and no part.
