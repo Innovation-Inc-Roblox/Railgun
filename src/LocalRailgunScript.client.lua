@@ -1,7 +1,7 @@
 --[[
 TheNexusAvenger
 
-Fires rails on the client.
+Fires rails on the client side.
 --]]
 --!strict
 
