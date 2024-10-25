@@ -1,7 +1,7 @@
 --[[
 TheNexusAvenger
 
-Controls the railgun on the server.
+Controls the railgun on the server side.
 --]]
 --!strict
 
