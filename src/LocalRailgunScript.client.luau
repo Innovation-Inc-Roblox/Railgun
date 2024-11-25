@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Fires rails on the client.
---]]
+--Fires rails on the client.
 --!strict
 
 local GUN_ICON = "rbxasset://textures/GunCursor.png"

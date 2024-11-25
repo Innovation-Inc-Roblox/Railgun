@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Handles moving R15 joints.
---]]
+--Handles moving R15 joints.
 --!strict
 
 local LEFT_HAND_GRIP_CORRECTION = CFrame.new(0.6, 0, 0) * CFrame.Angles(math.rad(-90), 0, 0)

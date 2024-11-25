@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Stores the state of the railguns on the server.
---]]
+--Stores the state of the railguns on the server.
 --!strict
 
 local Players = game:GetService("Players")

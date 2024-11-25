@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Controls the railgun on the server.
---]]
+--Controls the railgun on the server.
 --!strict
 
 local Workspace = game:GetService("Workspace")

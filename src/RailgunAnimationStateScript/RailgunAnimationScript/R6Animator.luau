@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Handles moving R6 joints.
---]]
+--Handles moving R6 joints.
 --!strict
 
 local TweenService = game:GetService("TweenService")
@@ -88,7 +84,7 @@ return function(Player: Player)
             Tweens a property.
             --]]
             function Animation:Tween(Ins: Instance, Property: string, Value: any, TweenInfoObject: TweenInfo)
-                local TweenName = tostring(Ins).."_"..Property
+                local TweenName = `{Ins}_{Property}`
                 if self.Tweens[TweenName] then
                     self.Tweens[TweenName]:Cancel()
                 end
