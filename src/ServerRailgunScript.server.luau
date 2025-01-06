@@ -74,9 +74,9 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
 
             local Overrides = Configuration:FindFirstChild("Overrides")
             if Overrides then
-                local TrailOverrides = Overrides:FindFirstChild("Rail")
-                if TrailOverrides then
-                    for _, Value in TrailOverrides:GetChildren() do
+                local RailOverrides = Overrides:FindFirstChild("Rail")
+                if RailOverrides then
+                    for _, Value in RailOverrides:GetChildren() do
                         if Value:IsA("ValueBase") then
                             (Rail :: any)[Value.Name] = Value.Value
                         end
@@ -159,8 +159,19 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
                 ReloadSound:Play()
             end)
 
+            --Build the list of trail properties.
+            --This is done on the server in case the railgun (and properties) haven't streamed in.
+            local TrailProperties = {}
+            local TrailOverrides = Overrides:FindFirstChild("Trail")
+            if TrailOverrides then
+                for _, Value in TrailOverrides:GetChildren() do
+                    if not Value:IsA("ValueBase") then continue end
+                    TrailProperties[Value.Name] = (Value :: any).Value
+                end
+            end
+
             --Invoke the clients to draw a beam and reload.
-            DisplayTrail:FireAllClients(RailEnd, EndPosition)
+            DisplayTrail:FireAllClients(RailEnd, RailEnd.WorldPosition, EndPosition, TrailProperties)
             SetAnimation("FireAndReload")
 
             --Enable the tool.

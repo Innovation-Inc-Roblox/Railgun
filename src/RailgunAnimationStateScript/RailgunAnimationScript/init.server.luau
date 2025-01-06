@@ -191,8 +191,8 @@ end
 
 
 --Connect displaying trails.
-RemotesContainer:WaitForChild("DisplayTrail").OnClientEvent:Connect(function(StartAttachment: Attachment, EndPosition: Vector3)
-    local StartPosition = StartAttachment.WorldPosition
+RemotesContainer:WaitForChild("DisplayTrail").OnClientEvent:Connect(function(StartAttachment: Attachment?, BackupStartPosition: Vector3, EndPosition: Vector3, TrailProperties: {[string]: any})
+    local StartPosition = StartAttachment and StartAttachment.WorldPosition or BackupStartPosition --StartAttachment may not be provided if not streamed in yet.
     local Distance = (EndPosition - StartPosition).Magnitude
 
     --Create the trail.
@@ -205,30 +205,16 @@ RemotesContainer:WaitForChild("DisplayTrail").OnClientEvent:Connect(function(Sta
     Trail.CanCollide = false
     Trail.Size = Vector3.new(0.2, 0.2, 0.2)
     Trail.Transparency = 0.5
-    Trail.CFrame = CFrame.new(StartPosition, EndPosition) * CFrame.new(0, 0, -Distance/2) * CFrame.Angles(math.pi/2, 0, 0)
+    Trail.CFrame = CFrame.new(StartPosition, EndPosition) * CFrame.new(0, 0, -Distance / 2) * CFrame.Angles(math.pi / 2, 0, 0)
+    for PropertyName, PropertyValue in TrailProperties do
+        (Trail :: any)[PropertyName] = PropertyValue
+    end
 
     local TrailMesh = Instance.new("CylinderMesh")
     TrailMesh.Scale = Vector3.new(2, Distance * 5, 2)
     TrailMesh.Parent = Trail
     Trail.Parent = Workspace
-
-    local Tool = StartAttachment.Parent and StartAttachment.Parent.Parent
-    if Tool then
-        local Configuration = Tool:FindFirstChild("Configuration")
-        if Configuration then
-            local Overrides = Configuration:FindFirstChild("Overrides")
-            if Overrides then
-                local TrailOverrides = Overrides:FindFirstChild("Trail")
-                if TrailOverrides then
-                    for _, Value in pairs(TrailOverrides:GetChildren()) do
-                        if not Value:IsA("ValueBase") then continue end
-                        (Trail :: any)[Value.Name] = (Value :: any).Value
-                    end
-                end
-            end
-        end
-    end
-
+    
     --Hide and remove the trail.
     TweenService:Create(Trail, TweenInfo.new(2), {
         CFrame = Trail.CFrame + Vector3.new(2, -1, 1).Unit,
