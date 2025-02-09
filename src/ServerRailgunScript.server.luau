@@ -162,7 +162,7 @@ FireWeapon.OnServerEvent:Connect(function(Player: Player, Direction: Vector3, Hi
             --Build the list of trail properties.
             --This is done on the server in case the railgun (and properties) haven't streamed in.
             local TrailProperties = {}
-            local TrailOverrides = Overrides:FindFirstChild("Trail")
+            local TrailOverrides = Overrides and Overrides:FindFirstChild("Trail")
             if TrailOverrides then
                 for _, Value in TrailOverrides:GetChildren() do
                     if not Value:IsA("ValueBase") then continue end
