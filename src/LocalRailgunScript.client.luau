@@ -138,7 +138,7 @@ local function OnEquip(Mouse: Mouse): ()
                 LoopWaited = true
                 if ReloadTimeValue.Value > 0 then
                     while not Tool.Enabled do
-                        Tool.Changed:Wait()
+                        Tool:GetPropertyChangedSignal("Enabled"):Wait()
                     end
                 else
                     task.wait()
@@ -219,7 +219,7 @@ local function OnEquip(Mouse: Mouse): ()
     if not Tool.Enabled then
         Mouse.Icon = GUN_RELOAD_ICON
         while not Tool.Enabled do
-            Tool.Changed:Wait()
+            Tool:GetPropertyChangedSignal("Enabled"):Wait()
         end
         if Equipped then
             Mouse.Icon = GUN_ICON
